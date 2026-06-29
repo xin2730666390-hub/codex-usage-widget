@@ -80,13 +80,13 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "status_waiting": "Waiting",
         "status_stale": "Needs refresh",
         "status_live": "Live",
-        "window_5h": "5-hour window",
-        "window_7d": "7-day window",
+        "window_5h": "5H window",
+        "window_7d": "7D window",
         "used": "Used",
         "used_short": "Used",
         "waiting": "Waiting",
         "waiting_snapshot": "Waiting snapshot",
-        "old_snapshot": "Old snapshot",
+        "stale_snapshot": "Waiting snapshot",
         "reset": " reset",
         "unknown": "Unknown",
         "unknown_time": "Unknown time",
@@ -145,7 +145,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "used_short": "用",
         "waiting": "等待",
         "waiting_snapshot": "等待快照",
-        "old_snapshot": "旧快照",
+        "stale_snapshot": "等待新快照",
         "reset": "重置",
         "unknown": "未知",
         "unknown_time": "未知时间",
@@ -1002,8 +1002,6 @@ class CardRenderer:
         if not sample.get("ok"):
             return tr("status_waiting")
         windows = sample.get("windows") or {}
-        if any(isinstance(item, dict) and item.get("stale") for item in windows.values()):
-            return tr("status_stale")
         return tr("status_live")
 
     def _status_color(self, sample: dict[str, Any]) -> str:
@@ -1056,7 +1054,7 @@ class CardRenderer:
         available = bool(window.get("available"))
         stale = bool(window.get("stale"))
         if stale:
-            return "#F59E0B", 0.08, available, stale
+            return "#94A3B8", 0.0, available, stale
         if not available:
             return "#94A3B8", 0.0, available, stale
         ratio = clamp((clean_float(remaining) or 0.0) / 100.0, 0.0, 1.0)
@@ -1071,7 +1069,7 @@ class CardRenderer:
 
     def _remaining_label(self, window: dict[str, Any], stale: bool) -> str:
         if stale:
-            return tr("waiting").upper() if CURRENT_LANGUAGE == "en" else tr("waiting")
+            return "--%"
         if not window.get("available"):
             return "--%"
         return percent_text(window.get("remaining_percent"))
@@ -1086,11 +1084,11 @@ class CardRenderer:
         draw.rounded_rectangle(self.xy(x1, y1, x2, y2), radius=self.sc(24), fill="#111C2B")
 
         draw.text(self.xy(x1 + 22, y1 + 22), "5H", font=self._font(20, True), fill="#F8FAFC")
-        label_font = self._font(13, True)
-        label = fit_text(draw, tr("window_5h"), label_font, self.sc(108))
+        label_font = self._font(12, True)
+        label = fit_text(draw, tr("window_5h"), label_font, self.sc(88))
         draw.text(self.xy(x1 + 71, y1 + 30), label, font=label_font, fill="#94A3B8")
 
-        used_text = f"{tr('used')} {percent_text(window.get('used_percent'))}" if available else tr("waiting")
+        used_text = tr("waiting") if stale else (f"{tr('used')} {percent_text(window.get('used_percent'))}" if available else tr("waiting"))
         draw.rounded_rectangle(self.xy(x2 - 102, y1 + 21, x2 - 18, y1 + 49), radius=self.sc(11), fill="#2A1F19")
         draw.text(self.xy(x2 - 60, y1 + 35), used_text, font=self._font(10, True), fill="#FDBA74", anchor="mm")
 
@@ -1099,7 +1097,7 @@ class CardRenderer:
         draw.text(self.xy(x1 + 22, y1 + 70), main, font=main_font, fill=color)
 
         reset = self._compact_relative(window.get("reset_at")) if available else tr("waiting_snapshot")
-        reset = tr("old_snapshot") if stale else f"{reset}{tr('reset')}"
+        reset = tr("stale_snapshot") if stale else f"{reset}{tr('reset')}"
         draw.text(self.xy(x1 + 24, y1 + 58), reset, font=self._font(13, True), fill="#CBD5E1")
 
         self._draw_progress(draw, x1 + 22, y2 - 34, x2 - 22, y2 - 18, ratio, color, available and not stale)
@@ -1113,9 +1111,9 @@ class CardRenderer:
 
         draw.text(self.xy(x1 + 22, y1 + 22), "7D", font=self._font(18, True), fill="#F8FAFC")
         week_label_font = self._font(12, True)
-        week_label = fit_text(draw, tr("window_7d"), week_label_font, self.sc(112))
+        week_label = fit_text(draw, tr("window_7d"), week_label_font, self.sc(104))
         draw.text(self.xy(x1 + 66, y1 + 27), week_label, font=week_label_font, fill="#94A3B8")
-        used_text = f"{tr('used_short')} {percent_text(window.get('used_percent'))}" if available else "--"
+        used_text = tr("waiting") if stale else (f"{tr('used_short')} {percent_text(window.get('used_percent'))}" if available else "--")
         draw.rounded_rectangle(self.xy(x2 - 82, y1 + 19, x2 - 18, y1 + 47), radius=self.sc(11), fill="#2A1F19")
         draw.text(self.xy(x2 - 50, y1 + 33), used_text, font=self._font(10, True), fill="#FDBA74", anchor="mm")
 
@@ -1124,7 +1122,7 @@ class CardRenderer:
         draw.text(self.xy(x1 + 22, y1 + 62), main, font=main_font, fill=color)
 
         reset = self._compact_relative(window.get("reset_at")) if available else tr("waiting_snapshot")
-        reset = tr("old_snapshot") if stale else f"{reset}{tr('reset')}"
+        reset = tr("stale_snapshot") if stale else f"{reset}{tr('reset')}"
         reset = fit_text(draw, reset, self._font(12, True), self.sc(128))
         draw.text(self.xy(x1 + 136, y1 + 78), reset, font=self._font(12, True), fill="#94A3B8")
 
@@ -1183,7 +1181,7 @@ class CardRenderer:
         if stale:
             main = tr("status_stale")
             main_font = self._font(30 if primary else 22, True)
-            reset_line = f"{tr('old_snapshot')} {percent_text(remaining)}"
+            reset_line = f"{tr('stale_snapshot')} {percent_text(remaining)}"
             helper_line = tr("waiting_snapshot")
         else:
             main = percent_text(remaining) if available else "--%"
