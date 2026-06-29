@@ -1013,10 +1013,22 @@ class CardRenderer:
         return "#FF3B30"
 
     def _draw_refresh_icon(self, draw: ImageDraw.ImageDraw, cx: int, cy: int, color: str) -> None:
-        box = self.xy(cx - 7, cy - 7, cx + 7, cy + 7)
-        draw.arc(box, start=34, end=316, fill=color, width=self.sc(1.6))
-        draw.line([self.xy(cx + 7, cy - 7), self.xy(cx + 12, cy - 7)], fill=color, width=self.sc(1.6))
-        draw.line([self.xy(cx + 7, cy - 7), self.xy(cx + 7, cy - 2)], fill=color, width=self.sc(1.6))
+        radius = 8
+        box = self.xy(cx - radius, cy - radius, cx + radius, cy + radius)
+        draw.arc(box, start=42, end=330, fill=color, width=self.sc(1.45))
+        angle = math.radians(42)
+        tip_x = cx + radius * math.cos(angle)
+        tip_y = cy + radius * math.sin(angle)
+        tangent = angle + math.pi / 2
+        back_x = tip_x - 4.4 * math.cos(tangent)
+        back_y = tip_y - 4.4 * math.sin(tangent)
+        normal = tangent - math.pi / 2
+        points = [
+            self.xy(tip_x, tip_y),
+            self.xy(back_x + 2.2 * math.cos(normal), back_y + 2.2 * math.sin(normal)),
+            self.xy(back_x - 2.2 * math.cos(normal), back_y - 2.2 * math.sin(normal)),
+        ]
+        draw.polygon(points, fill=color)
 
     def _draw_close_icon(self, draw: ImageDraw.ImageDraw, cx: int, cy: int, color: str) -> None:
         draw.line([self.xy(cx - 4, cy - 4), self.xy(cx + 4, cy + 4)], fill=color, width=self.sc(1.6))
