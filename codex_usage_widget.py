@@ -83,7 +83,6 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "window_5h": "5H window",
         "window_7d": "7D window",
         "used": "Used",
-        "used_short": "Used",
         "waiting": "Waiting",
         "waiting_snapshot": "Waiting snapshot",
         "stale_snapshot": "Waiting snapshot",
@@ -142,7 +141,6 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "window_5h": "5 小时窗口",
         "window_7d": "1 周窗口",
         "used": "已用",
-        "used_short": "用",
         "waiting": "等待",
         "waiting_snapshot": "等待快照",
         "stale_snapshot": "等待新快照",
@@ -1116,9 +1114,6 @@ class CardRenderer:
         draw.rounded_rectangle(self.xy(x1, y1, x2, y2), radius=self.sc(24), fill="#111C2B")
 
         draw.text(self.xy(x1 + 22, y1 + 22), "5H", font=self._font(20, True), fill="#F8FAFC")
-        label_font = self._font(12, True)
-        label = fit_text(draw, tr("window_5h"), label_font, self.sc(88))
-        draw.text(self.xy(x1 + 71, y1 + 30), label, font=label_font, fill="#94A3B8")
 
         used_text = tr("waiting") if stale else (f"{tr('used')} {percent_text(window.get('used_percent'))}" if available else tr("waiting"))
         draw.rounded_rectangle(self.xy(x2 - 102, y1 + 21, x2 - 18, y1 + 49), radius=self.sc(11), fill="#2A1F19")
@@ -1141,11 +1136,8 @@ class CardRenderer:
         self._draw_soft_shadow(draw, x1, y1, x2, y2, 22)
         draw.rounded_rectangle(self.xy(x1, y1, x2, y2), radius=self.sc(22), fill="#101A29")
 
-        draw.text(self.xy(x1 + 22, y1 + 22), "7D", font=self._font(18, True), fill="#F8FAFC")
-        week_label_font = self._font(12, True)
-        week_label = fit_text(draw, tr("window_7d"), week_label_font, self.sc(104))
-        draw.text(self.xy(x1 + 66, y1 + 27), week_label, font=week_label_font, fill="#94A3B8")
-        used_text = tr("waiting") if stale else (f"{tr('used_short')} {percent_text(window.get('used_percent'))}" if available else "--")
+        draw.text(self.xy(x1 + 22, y1 + 22), "7D", font=self._font(20, True), fill="#F8FAFC")
+        used_text = tr("waiting") if stale else (f"{tr('used')} {percent_text(window.get('used_percent'))}" if available else "--")
         draw.rounded_rectangle(self.xy(x2 - 82, y1 + 19, x2 - 18, y1 + 47), radius=self.sc(11), fill="#2A1F19")
         draw.text(self.xy(x2 - 50, y1 + 33), used_text, font=self._font(10, True), fill="#FDBA74", anchor="mm")
 
