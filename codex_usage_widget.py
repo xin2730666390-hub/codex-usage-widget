@@ -1255,13 +1255,14 @@ class CardRenderer:
             footer = errors[0] if errors else (sample.get("note") or tr("footer_waiting"))
         if sample.get("source_state") == "cache":
             footer = tr("footer_cache", age=format_age(source_event))
-        footer = fit_text(draw, footer, self._font(12), self.sc(178))
-        draw.text(self.xy(22, 496), footer, font=self._font(12, True), fill="#94A3B8")
+        footer_font = self._font(12, True)
+        footer = fit_text(draw, footer, footer_font, self.sc(178))
+        draw.text(self.xy(22, 502), footer, font=footer_font, fill="#94A3B8", anchor="lm")
 
         plan = str(sample.get("plan_type") or "Codex").upper()
         plan = fit_text(draw, plan, self._font(12, True), self.sc(62), suffix="")
-        draw.rounded_rectangle(self.xy(212, 488, 282, 512), radius=self.sc(10), fill="#172437")
-        draw.text(self.xy(247, 500), plan, font=self._font(11, True), fill="#CBD5E1", anchor="mm")
+        draw.rounded_rectangle(self.xy(212, 490, 282, 514), radius=self.sc(10), fill="#172437")
+        draw.text(self.xy(247, 502), plan, font=self._font(11, True), fill="#CBD5E1", anchor="mm")
 
 
 class UsageWidget:
